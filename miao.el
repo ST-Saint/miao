@@ -95,8 +95,12 @@
 (defvar miao-leader-state-keymap
   (let ((keymap (make-sparse-keymap)))
     (suppress-keymap keymap t)
-    (define-key keymap (kbd "b r") 'revert-buffer)
-    (define-key keymap (kbd "<SPC>") 'beacon-blink)
+    keymap)
+  "Keymap for Miao leader state.")
+
+(defvar miao-leader-base-keymap
+  (let ((keymap (make-sparse-keymap)))
+    (suppress-keymap keymap t)
     (define-key keymap (kbd "<escape>") 'miao-leader-quit)
     (define-key keymap [remap keyboard-quit] 'miao-leader-quit)
     (define-key keymap [remap self-insert-command] 'miao-leader-self-insert)
@@ -156,7 +160,7 @@
 (define-minor-mode miao-leader-mode
   "Get your foos in the right places."
   :lighter " ಎ-ω-ಎ"
-  :keymap miao-leader-state-keymap
+  :keymap miao-leader-base-keymap
   (setq miao--leader-previous-state miao--current-state)
   (if miao-leader-mode
       (if (not (equal miao--current-state 'leader))
