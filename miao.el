@@ -36,9 +36,7 @@
 
 (defmacro miao--state-mode-p (name)
   `(defun ,(miao--intern name "-p") ()
-     (bound-and-true-p ,(miao--intern name))
-       )
-  )
+     (bound-and-true-p ,(miao--intern name))))
 
 (defun miao--intern (name &optional p)
   (intern (concat "miao-" (symbol-name name) "-mode" p)))
@@ -58,13 +56,11 @@
   :lighter " Miao"
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c ESC") 'miao-normal-mode)
-	    (define-key map (kbd "<space>") 'miao-leader-mode)
+            (define-key map (kbd "<space>") 'miao-leader-mode)
             map)
   (if miao-mode
       (progn
-	(miao-normal-mode t)
-	(message "enable normal mode")
-	)
+        (miao-normal-mode t))
     (miao--disable-current-mode)))
 
 ;;;###autoload
@@ -75,9 +71,7 @@
 
 (defun miao--disable-current-mode ()
   (when miao--current-state
-    (message "disable: %s" (miao--intern miao--current-state))
-    (funcall (miao--intern miao--current-state) -1))
-  )
+    (funcall (miao--intern miao--current-state) -1)))
 
 (defvar miao-normal-state-keymap
   (let ((keymap (make-sparse-keymap)))
@@ -113,17 +107,15 @@
   "Get your foos in the right places."
   :lighter " ಎ·ω·ಎ"
   :keymap miao-normal-state-keymap
-  (message "before normal %s %s" miao-normal-mode miao--current-state)
   (if miao-normal-mode
       (if (not (equal miao--current-state 'normal))
-	  ;; switch to normal mode: disable current + set normal
-	  (progn
-	    (miao--disable-current-mode)
-	    (setq miao--current-state 'normal)))
+          ;; switch to normal mode: disable current + set normal
+          (progn
+            (miao--disable-current-mode)
+            (setq miao--current-state 'normal)))
     (setq miao--current-state nil)
     )
-  (setq cursor-type 'box)
-  (message "after normal %s" miao--current-state))
+  (setq cursor-type 'box))
 
 (miao--state-mode-p normal)
 
@@ -149,42 +141,35 @@
   "Get your foos in the right places."
   :lighter " /ᐠ.ꞈ.ᐟ\\"
   :keymap miao-insert-state-keymap
-  (message "before insert %s" miao--current-state)
   (if miao-insert-mode
       (if (not (equal miao--current-state 'insert))
-	  ;; switch to insert mode: disable current + set insert
-	  (progn
-	    (miao--disable-current-mode)
-	    (setq miao--current-state 'insert)))
+          ;; switch to insert mode: disable current + set insert
+          (progn
+            (miao--disable-current-mode)
+            (setq miao--current-state 'insert)))
     (setq miao--current-state nil)
     )
-  (setq cursor-type 'bar)
-  (message "after insert %s" miao--current-state))
+  (setq cursor-type 'bar))
 
 (miao--state-mode-p insert)
-
 
 (define-minor-mode miao-leader-mode
   "Get your foos in the right places."
   :lighter " ಎ-ω-ಎ"
   :keymap miao-leader-state-keymap
-  (message "before leader %s %s" miao-leader-mode miao--current-state)
   (setq miao--leader-previous-state miao--current-state)
   (if miao-leader-mode
       (if (not (equal miao--current-state 'leader))
-	  ;; switch to leader mode: disable current + set leader
-	  (progn
-	    (miao--disable-current-mode)
-	    (setq miao--current-state 'leader)))
-    (setq miao--current-state nil)
-    )
-  (message "after leader %s" miao--current-state))
+          ;; switch to leader mode: disable current + set leader
+          (progn
+            (miao--disable-current-mode)
+            (setq miao--current-state 'leader)))
+    (setq miao--current-state nil)))
 
 (defun miao-leader-quit ()
   "miao leader state quit and switch to previous state"
   (interactive)
   (miao-switch-to-previous-state)
-  (message "leader to %s" miao--leader-previous-state)
   (setq miao--leader-previous-state nil)
   (setq miao--leader-keys nil))
 
@@ -225,7 +210,6 @@
     (format "<%s>" event))
    (t nil)))
 
-
 (defun miao-leader-self-insert ()
   "Default command when leader state is enabled."
   (interactive)
@@ -239,7 +223,7 @@
 (defun miao--leader-lookup-key (keys)
   (let* ((overriding-local-map miao-leader-state-keymap)
          (keybind (key-binding keys)))
-      keybind))
+    keybind))
 
 (defun miao--leader-try-execute ()
   "Try execute command.
@@ -248,7 +232,6 @@ If there is a command available on the current key binding,
 try replacing the last modifier and try again."
   (let* ((key-str (miao--leader-format-keys nil))
          (cmd (miao--leader-lookup-key (read-kbd-macro key-str))))
-    (message "leader-keys %s key-str: %s cmd: %s" miao--leader-keys key-str cmd)
     (cond
      ((commandp cmd t)
       (setq current-prefix-arg miao--prefix-arg
@@ -265,12 +248,10 @@ try replacing the last modifier and try again."
       (miao--leader-try-execute))
      (t
       (setq miao--prefix-arg nil)
-      (message "%s is undefined" (miao--leader-format-keys nil))
       (miao-leader-quit)))))
 
 (defun miao--leader-format-single-key (key)
   "Return a display format for input KEY."
-  (message "single-key %s" key)
   (cl-case (car key)
     (meta (format "M-%s" (cdr key)))
     (control (format "C-%s" (miao--leader-format-upcase (cdr key))))
@@ -290,7 +271,7 @@ try replacing the last modifier and try again."
   (let ((result ""))
     (setq result
           (thread-first
-              (mapcar #'miao--leader-format-single-key miao--leader-keys)
+            (mapcar #'miao--leader-format-single-key miao--leader-keys)
             (reverse)
             (string-join " ")))
     (cond
