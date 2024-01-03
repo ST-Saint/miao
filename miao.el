@@ -32,7 +32,7 @@
   "A symbol represent current state.")
 
 (defvar miao--leader-keys nil)
-(defvar meow--prefix-arg nil)
+(defvar miao--prefix-arg nil)
 
 (defmacro miao--state-mode-p (name)
   `(defun ,(miao--intern name "-p") ()
@@ -60,6 +60,7 @@
             map)
   (if miao-mode
       (progn
+        (miao-setup-modeline)
         (miao-normal-mode t))
     (miao--disable-current-mode)))
 
@@ -319,5 +320,37 @@ Example usage:
   (let ((map (alist-get state miao-keymap-alist)))
     (pcase-dolist (`(,key . ,def) keybinds)
       (define-key map (kbd key) def))))
+
+(defvar miao-modeline-indicators '((normal . "N")
+                                   (insert . "I")
+                                   (leader . "K")))
+
+(defface miao-modeline-face
+  '((t :foreground nil :background nil :weight bold))
+  "Normal state indicator."
+  :group 'miao)
+
+(defun miao-indicator ()
+  (when (bound-and-true-p miao-global-mode)
+    (let* ((state (miao--current-state))
+           (state-name (alist-get state miao-modeline-indicators)))
+      (if state-name
+          (propertize
+           (format " %s " state-name)
+           'face 'miao-modeline-face)
+        ""))))
+
+(defun miao-setup-modeline ()
+  "Setup indicator appending the return of function
+`miao-indicator' to the modeline.
+
+This function should be called after you setup other parts of the mode-line
+ and will work well for most cases.
+
+If this function is not enough for your requirements,
+use `miao-indicator' to get the raw text for indicator
+and put it anywhere you want."
+  (unless (cl-find '(:eval (miao-indicator)) mode-line-format :test 'equal)
+    (setq-default mode-line-format (append '((:eval (miao-indicator))) mode-line-format))))
 
 (provide 'miao)
