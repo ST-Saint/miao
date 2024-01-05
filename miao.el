@@ -60,7 +60,7 @@
             map)
   (if miao-mode
       (progn
-        (miao-setup-modeline)
+        ;; (miao-setup-modeline)
         (miao-normal-mode t))
     (miao--disable-current-mode)))
 
@@ -68,7 +68,13 @@
 (define-global-minor-mode miao-global-mode miao-mode
   (lambda ()
     (unless (minibufferp)
-      (miao-mode 1))))
+      (miao-mode 1)))
+  (add-to-ordered-list 'emulation-mode-map-alists
+                       `((miao-normal-mode . ,miao-normal-state-keymap)))
+  (add-to-ordered-list 'emulation-mode-map-alists
+                       `((miao-beacon-mode . ,miao-leader-base-keymap)))
+  (add-to-ordered-list 'emulation-mode-map-alists
+                       `((miao-keypad-mode . ,miao-leader-state-keymap))))
 
 (defun miao--disable-current-mode ()
   (when miao--current-state
@@ -93,12 +99,6 @@
     keymap)
   "Keymap for Miao insert state.")
 
-(defvar miao-leader-state-keymap
-  (let ((keymap (make-sparse-keymap)))
-    (suppress-keymap keymap t)
-    keymap)
-  "Keymap for Miao leader state.")
-
 (defvar miao-leader-base-keymap
   (let ((keymap (make-sparse-keymap)))
     (suppress-keymap keymap t)
@@ -108,9 +108,36 @@
     keymap)
   "Keymap for Miao leader state.")
 
+(defvar miao-leader-state-keymap
+  (let ((keymap (make-sparse-keymap)))
+    (suppress-keymap keymap t)
+    (define-key keymap (kbd "Z") 'miao-bypass-mode)
+    keymap)
+  "Keymap for Miao leader state.")
+
+(defvar miao-bypass-state-keymap
+  (let ((keymap (make-sparse-keymap)))
+    (suppress-keymap keymap t)
+    keymap)
+  "Keymap for Miao bypass state.")
+
+(defvar miao-state-mode-alist
+  '((normal . miao-normal-mode)
+    (insert . miao-insert-mode)
+    (leader . miao-leader-mode)
+    (bypass  . miao-bypass-mode))
+  "Alist of miao states -> modes")
+
+(defvar miao-keymap-alist
+  `((normal . ,miao-normal-state-keymap)
+    (insert . ,miao-insert-state-keymap)
+    (leader . ,miao-leader-state-keymap)
+    (bypass  . ,miao-bypass-state-keymap))
+  "Alist of symbols of state names to keymaps.")
+
 (define-minor-mode miao-normal-mode
   "Get your foos in the right places."
-  :lighter " ಎ·ω·ಎ"
+  :lighter " N"
   :keymap miao-normal-state-keymap
   (if miao-normal-mode
       (if (not (equal miao--current-state 'normal))
@@ -124,18 +151,6 @@
 
 (miao--state-mode-p normal)
 
-(defvar miao-state-mode-alist
-  '((normal . miao-normal-mode)
-    (insert . miao-insert-mode)
-    (leader . miao-leader-mode))
-  "Alist of miao states -> modes")
-
-(defvar miao-keymap-alist
-  `((normal . ,miao-normal-state-keymap)
-    (insert . ,miao-insert-state-keymap)
-    (leader . ,miao-leader-state-keymap))
-  "Alist of symbols of state names to keymaps.")
-
 (defun miao-append ()
   (interactive)
   (miao-insert-mode t)
@@ -144,7 +159,7 @@
 
 (define-minor-mode miao-insert-mode
   "Get your foos in the right places."
-  :lighter " /ᐠ.ꞈ.ᐟ\\"
+  :lighter " I"
   :keymap miao-insert-state-keymap
   (if miao-insert-mode
       (if (not (equal miao--current-state 'insert))
@@ -160,7 +175,7 @@
 
 (define-minor-mode miao-leader-mode
   "Get your foos in the right places."
-  :lighter " ಎ-ω-ಎ"
+  :lighter " L"
   :keymap miao-leader-base-keymap
   (setq miao--leader-previous-state miao--current-state)
   (if miao-leader-mode
@@ -168,7 +183,26 @@
           ;; switch to leader mode: disable current + set leader
           (progn
             (miao--disable-current-mode)
-            (setq miao--current-state 'leader)))
+            (setq miao--current-state 'leader)
+            (setq overriding-local-map miao-leader-base-keymap
+                  overriding-terminal-local-map nil)))
+    (setq miao--current-state nil)))
+
+(define-minor-mode miao-bypass-mode
+  "Get your foos in the right places."
+  :lighter " B"
+  :keymap miao-bypass-state-keymap
+  (setq miao--bypass-previous-state miao--current-state)
+  (if miao-bypass-mode
+      (if (not (equal miao--current-state 'bypass))
+          ;; switch to bypass mode: disable current + set bypass
+          (progn
+            (miao--disable-current-mode)
+            (setq miao--current-state 'bypass)
+            (set-keymap-parent miao-bypass-state-keymap (current-local-map))
+            (define-key miao-bypass-state-keymap (kbd "ESC") 'miao-normal-mode)
+            (define-key miao-bypass-state-keymap (kbd "<escape>") 'miao-leader-quit)
+            (define-key miao-bypass-state-keymap [remap keyboard-quit] 'miao-normal-mode)))
     (setq miao--current-state nil)))
 
 (defun miao-leader-quit ()
@@ -176,7 +210,8 @@
   (interactive)
   (miao-switch-to-previous-state)
   (setq miao--leader-previous-state nil)
-  (setq miao--leader-keys nil))
+  (setq miao--leader-keys nil)
+  (setq overriding-local-map nil))
 
 (defun miao--switch-state (state)
   "Switch to STATE execute 'miao-switch-state-hook unless NO-HOOK is non-nil."
@@ -297,7 +332,7 @@ try replacing the last modifier and try again."
       (setq result (concat result " C-"))))
     result))
 
-(defun miao-define-keys (state &rest keybinds)
+(defun miao-define-keys (states &rest keybinds)
   "Define KEYBINDS in STATE.
 
 Example usage:
@@ -317,13 +352,20 @@ Example usage:
     ;; bind to a keybinding which holds a command
     '(\"q\" . \"C-x C-q\"))"
   (declare (indent 1))
-  (let ((map (alist-get state miao-keymap-alist)))
-    (pcase-dolist (`(,key . ,def) keybinds)
-      (define-key map (kbd key) def))))
+  (if (listp states)
+      (dolist (state states)
+        (message "%s %s" state (alist-get state miao-keymap-alist))
+        (let ((map (alist-get state miao-keymap-alist)))
+          (pcase-dolist (`(,key . ,def) keybinds)
+            (define-key map (kbd key) def))))
+      (let ((map (alist-get states miao-keymap-alist)))
+        (pcase-dolist (`(,key . ,def) keybinds)
+          (define-key map (kbd key) def)))))
 
 (defvar miao-modeline-indicators '((normal . "N")
                                    (insert . "I")
-                                   (leader . "K")))
+                                   (leader . "L")
+                                   (bypass . "B")))
 
 (defface miao-modeline-face
   '((t :foreground nil :background nil :weight bold))
