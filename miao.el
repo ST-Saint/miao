@@ -362,6 +362,21 @@ Example usage:
         (pcase-dolist (`(,key . ,def) keybinds)
           (define-key map (kbd key) def)))))
 
+
+(defun miao-leader-define-keys (&rest keybinds)
+  "Define KEYBINDS in miao leader mode."
+  (declare (indent 1))
+  (let ((map (alist-get 'leader miao-keymap-alist)))
+        (pcase-dolist (`(,key . ,def) keybinds)
+          (define-key map (kbd key) def))))
+
+(defun miao-leader-define-major-keys (major &rest keybinds)
+  "Define KEYBINDS in miao leader mode."
+  (declare (indent 1))
+  (let ((map (alist-get 'leader miao-keymap-alist)))
+        (pcase-dolist (`(,key . ,def) keybinds)
+          (define-key map (kbd key) def))))
+
 (defvar miao-modeline-indicators '((normal . "N")
                                    (insert . "I")
                                    (leader . "L")
@@ -381,6 +396,19 @@ Example usage:
            (format " %s " state-name)
            'face 'miao-modeline-face)
         ""))))
+
+
+(defun miao-mark-word ()
+  (interactive)
+  (let ((bound (bounds-of-thing-at-point 'word)))
+    (goto-char (car bound))
+    (set-mark (cdr bound))))
+
+(defun miao-mark-symbol ()
+  (interactive)
+  (let ((bound (bounds-of-thing-at-point 'symbol)))
+      (goto-char (car bound))
+      (set-mark (cdr bound))))
 
 (defun miao-setup-modeline ()
   "Setup indicator appending the return of function
