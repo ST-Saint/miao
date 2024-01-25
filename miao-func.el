@@ -59,6 +59,22 @@
       (goto-char (car bound))
       (set-mark (cdr bound))))
 
+(defun miao-mark-list ()
+  (interactive)
+  (let ((begin (if (region-active-p)
+                   (or (backward-up-list 1 t t) (point))
+                   (cond ((looking-back "[\])\{]") (backward-list))
+                    ((looking-at "[\(\[\{]") (point))
+                    (t (or (backward-up-list 1 t t)) (point)))))
+        (end (scan-sexps (point) 1)))
+    (message "begin %s end %s" begin end)
+    (set-mark end)
+    (goto-char begin)))
+
+(defun miao-toggle-mark-point ()
+  (interactive)
+  (if (region-active-p)
+      (exchange-point-and-mark)))
 
 (defun miao-setup-modeline ()
   "Setup indicator appending the return of function

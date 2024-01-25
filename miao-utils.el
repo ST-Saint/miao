@@ -98,6 +98,7 @@ try replacing the last modifier and try again."
       (miao--leader-try-execute))
      (t
       (setq miao--prefix-arg nil)
+      (message "[Miao] %s is undefined" (miao--leader-format-keys nil))
       (miao-leader-quit)))))
 
 (defun miao--leader-format-single-key (key)
@@ -137,7 +138,6 @@ try replacing the last modifier and try again."
      ;;          (concat result " M-"))))
      ;; (miao--use-literal
      ;;  (setq result (concat result " ○")))
-
      (prompt
       (setq result (concat result " C-"))))
     result))
