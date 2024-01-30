@@ -73,10 +73,9 @@
           ;; switch to normal mode: disable current + set normal
           (progn
             (miao--disable-current-mode)
-            (setq miao--current-state 'normal)))
-    (setq miao--current-state nil)
-    )
-  (setq cursor-type 'box))
+            (setq miao--current-state 'normal)
+            (setq cursor-type 'box)))
+    (setq miao--current-state nil)))
 
 (miao--state-mode-p normal)
 
@@ -89,10 +88,9 @@
           ;; switch to insert mode: disable current + set insert
           (progn
             (miao--disable-current-mode)
-            (setq miao--current-state 'insert)))
-    (setq miao--current-state nil)
-    )
-  (setq cursor-type 'bar))
+            (setq miao--current-state 'insert)
+            (setq cursor-type 'bar)))
+      (setq miao--current-state nil)))
 
 (miao--state-mode-p insert)
 

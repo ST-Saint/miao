@@ -76,6 +76,17 @@
   (if (region-active-p)
       (exchange-point-and-mark)))
 
+(defun miao-cursor-blink ()
+  (interactive)
+  (let ((begin (line-beginning-position)))
+    (end-of-visible-line)
+    (let ((end (if (eobp)
+                   (point)
+                 (1+ (point)))))
+     (goto-char begin)
+     (set-mark end)
+     (run-with-idle-timer 0.5 t #'deactivate-mark))))
+
 (defun miao-setup-modeline ()
   "Setup indicator appending the return of function
 `miao-indicator' to the modeline.
