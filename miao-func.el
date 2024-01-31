@@ -59,6 +59,18 @@
       (goto-char (car bound))
       (set-mark (cdr bound))))
 
+(defun miao-mark-string ()
+  (interactive)
+  (let ((bound (bounds-of-thing-at-point 'string)))
+    (goto-char (car bound))
+    (set-mark (cdr bound))))
+
+(defun miao-mark-string-inner ()
+  (interactive)
+  (let ((bound (bounds-of-thing-at-point 'string)))
+    (goto-char (+ 1 (car bound)))
+    (set-mark (- (cdr bound) 1))))
+
 (defun miao-mark-list-inner ()
   (interactive)
   (if (and (region-active-p)
