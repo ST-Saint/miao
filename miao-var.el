@@ -52,7 +52,7 @@
   "Alist of symbols of state names to keymaps.")
 
 (defface miao-modeline-face
-  '((t :foreground "unspecified" :background "unspecified" :weight bold))
+  '((t :weight bold))
   "Normal state indicator."
   :group 'miao)
 
