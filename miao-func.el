@@ -76,6 +76,14 @@
   (if (region-active-p)
       (exchange-point-and-mark)))
 
+(defun miao-delete-char ()
+  (interactive)
+  (delete-char 1))
+
+(defun miao-quit-window ()
+  (interactive)
+  (quit-window))
+
 (defun miao-cursor-blink ()
   (interactive)
   (let ((begin (line-beginning-position)))
@@ -85,7 +93,7 @@
                  (1+ (point)))))
      (goto-char begin)
      (set-mark end)
-     (run-with-idle-timer 0.5 t #'deactivate-mark))))
+     (run-with-idle-timer 0.5 nil #'deactivate-mark))))
 
 (defun miao-setup-modeline ()
   "Setup indicator appending the return of function
