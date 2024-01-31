@@ -59,6 +59,23 @@
       (goto-char (car bound))
       (set-mark (cdr bound))))
 
+(defun miao-mark-list-inner ()
+  (interactive)
+  (if (and (region-active-p)
+           (looking-back "[\(\[\{]"))
+      (backward-char))
+  (let ((begin
+         (if (region-active-p)
+             (condition-case nil
+                 (or (backward-up-list 1 t t) (point))
+                 (error (point)))
+           (cond ((looking-back "[\])\{]") (backward-list))
+                 ((looking-at "[\(\[\{]") (point))
+                 (t (or (backward-up-list 1 t t)) (point)))))
+        (end (scan-sexps (point) 1)))
+    (set-mark (- end 1))
+    (goto-char (+ 1 begin))))
+
 (defun miao-mark-list ()
   (interactive)
   (let ((begin (if (region-active-p)
