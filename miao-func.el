@@ -119,10 +119,10 @@
           (progn (next-logical-line) (end-of-line))
         (progn (previous-logical-line) (beginning-of-line)))
     (let ((pos (point))
-        (begin (pos-bol))
-        (end (pos-eol)))
+          (begin (pos-bol))
+          (end (pos-eol)))
      (goto-char end)
-    (set-mark begin))))
+     (set-mark begin))))
 
 (defun miao-cursor-blink ()
   (interactive)
