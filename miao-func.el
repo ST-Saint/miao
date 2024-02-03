@@ -50,14 +50,14 @@
 (defun miao-mark-word ()
   (interactive)
   (let ((bound (bounds-of-thing-at-point 'word)))
-    (goto-char (car bound))
-    (set-mark (cdr bound))))
+    (goto-char (cdr bound))
+    (set-mark (car bound))))
 
 (defun miao-mark-symbol ()
   (interactive)
   (let ((bound (bounds-of-thing-at-point 'symbol)))
-      (goto-char (car bound))
-      (set-mark (cdr bound))))
+      (goto-char (cdr bound))
+      (set-mark (car bound))))
 
 (defun miao-mark-string ()
   (interactive)
@@ -132,6 +132,31 @@
     (goto-char begin)
     (set-mark (+ 1 end))
     (run-with-idle-timer 0.5 nil (lambda () (progn (deactivate-mark) (goto-char pos))))))
+
+(defun miao-next-region-item ()
+  (if (region-active-p)
+    (let ((forward (if (equal (point) (region-end)) t nil))
+          (length (- (region-end) (region-beginning)))
+          (re (regexp-quote (buffer-substring-no-properties (region-beginning) (region-end)))))
+      (goto-char (if forward (region-end) (region-beginning)))
+      (setq next (re-search-forward re nil t (if forward 1 -1)))
+      (set-mark (+ (point) (if forward (- length) length))))))
+
+(defun miao-next-symbol-item (direction)
+  (if (not (region-active-p))
+    (let* ((bounds (bounds-of-thing-at-point 'symbol))
+           (begin (car bounds))
+           (end (cdr bounds))
+           (offset (- (point) begin))
+           (re (concat "\\_<" (regexp-quote (buffer-substring-no-properties begin end)) "\\_>")))
+      (re-search-forward re nil t direction))))
+
+(defun miao-next-item ()
+  (interactive)
+  (if (region-active-p)
+      (miao-next-region-item)
+    (miao-next-symbol-item 1)))
+
 
 (defun miao-setup-modeline ()
   "Setup indicator appending the return of function
