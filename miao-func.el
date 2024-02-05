@@ -157,6 +157,11 @@
       (miao-next-region-item)
     (miao-next-symbol-item 1)))
 
+(defun miao-prev-item ()
+  (interactive)
+  (if (region-active-p)
+      (miao-next-region-item)
+    (miao-next-symbol-item -1)))
 
 (defun miao-setup-modeline ()
   "Setup indicator appending the return of function
