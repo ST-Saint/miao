@@ -148,7 +148,8 @@
            (begin (car bounds))
            (end (cdr bounds))
            (offset (- (point) begin))
-           (re (concat "\\_<" (regexp-quote (buffer-substring-no-properties begin end)) "\\_>")))
+           (re (concat "\\_<" (regexp-quote (buffer-substring-no-properties begin end)) "\\_>"))
+           (case-fold-search nil))
       (re-search-forward re nil t direction))))
 
 (defun miao-next-item ()
