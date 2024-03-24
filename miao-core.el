@@ -44,8 +44,9 @@
   :keymap miao-mode-keymap
   (if miao-mode
       (progn
-        ;; (miao-setup-modeline)
-        (miao-normal-mode t))
+        (if (member major-mode miao-bypass-mode-list)
+            (miao-bypass-mode)
+          (miao-normal-mode t)))
     (miao--disable-current-mode)))
 
 ;;;###autoload
@@ -90,7 +91,7 @@
             (miao--disable-current-mode)
             (setq miao--current-state 'insert)
             (setq cursor-type 'bar)))
-      (setq miao--current-state nil)))
+    (setq miao--current-state nil)))
 
 (miao--state-mode-p insert)
 
@@ -120,10 +121,15 @@
           (progn
             (miao--disable-current-mode)
             (setq miao--current-state 'bypass)
-            (set-keymap-parent miao-bypass-state-keymap (current-local-map))
-            (define-key miao-bypass-state-keymap (kbd "ESC") 'miao-normal-mode)
-            (define-key miao-bypass-state-keymap (kbd "<escape>") 'miao-leader-quit)
-            (define-key miao-bypass-state-keymap [remap keyboard-quit] 'miao-normal-mode)))
+            (set-keymap-parent miao-bypass-state-keymap miao-normal-state-keymap)
+
+            ;; make a-zA-Z transparent
+            (dolist (chr miao-bypass-mode-keys)
+              (let ((miao-key (lookup-key miao-normal-state-keymap (char-to-string chr)))
+                    (major-key (lookup-key (current-local-map) (char-to-string chr))))
+                (if (and miao-key major-key)
+                    (define-key miao-bypass-state-keymap (char-to-string chr) major-key))))))
+
     (setq miao--current-state nil)))
 
 

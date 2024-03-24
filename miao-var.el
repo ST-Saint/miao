@@ -51,6 +51,14 @@
     (bypass  . ,miao-bypass-state-keymap))
   "Alist of symbols of state names to keymaps.")
 
+(defvar miao-bypass-mode-list
+  '(dired-mode
+    pdf-view-mode
+    mu4e-main-mode))
+
+(defvar miao-bypass-mode-keys
+  (append (number-sequence ?A ?Z) (number-sequence ?a ?z)))
+
 (defface miao-modeline-face
   '((t :weight bold))
   "Normal state indicator."

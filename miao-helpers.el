@@ -53,19 +53,23 @@ Example usage:
           (define-key map (kbd key) def)))))
 
 
+(defun miao-bypass-list-add (mode)
+  "Add mode to miao-bypass-mode-list."
+  (add-to-list 'mode 'miao-bypass-mode-list))
+
 (defun miao-leader-define-keys (&rest keybinds)
   "Define KEYBINDS in miao leader mode."
   (declare (indent 1))
   (let ((map (alist-get 'leader miao-keymap-alist)))
-        (pcase-dolist (`(,key . ,def) keybinds)
-          (define-key map (kbd key) def))))
+       (pcase-dolist (`(,key . ,def) keybinds)
+         (define-key map (kbd key) def))))
 
 (defun miao-leader-define-major-keys (major &rest keybinds)
   "Define KEYBINDS in miao leader mode."
   (declare (indent 1))
   (let ((map (alist-get 'leader miao-keymap-alist)))
-        (pcase-dolist (`(,key . ,def) keybinds)
-          (define-key map (kbd key) def))))
+       (pcase-dolist (`(,key . ,def) keybinds)
+         (define-key map (kbd key) def))))
 
 (defun miao-indicator ()
   (when (bound-and-true-p miao-global-mode)
