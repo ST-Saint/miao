@@ -44,7 +44,6 @@ Example usage:
   (declare (indent 1))
   (if (listp states)
       (dolist (state states)
-        (message "%s %s" state (alist-get state miao-keymap-alist))
         (let ((map (alist-get state miao-keymap-alist)))
           (pcase-dolist (`(,key . ,def) keybinds)
             (define-key map (kbd key) def))))
