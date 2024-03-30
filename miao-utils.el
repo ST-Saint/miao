@@ -42,6 +42,12 @@
         (upcase c)
       c)))
 
+(defun miao--toggle-bypass-mode ()
+  (interactive)
+  (if (bound-and-true-p miao-bypass-mode)
+      (miao-normal-mode)
+    (miao-bypass-mode)))
+
 (defun miao--parse-input-event (event)
   (cond
    ((equal event 32)

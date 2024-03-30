@@ -55,6 +55,7 @@
   '(dired-mode
     pdf-view-mode
     magit-status-mode
+    ediff-mode
     mu4e-main-mode))
 
 (defvar miao-bypass-mode-keys
