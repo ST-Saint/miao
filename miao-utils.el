@@ -84,7 +84,7 @@
     (if leader-major-keymap
         (let* ((overriding-local-map leader-major-keymap)
                (major-keybind (key-binding keys)))
-          (if major-keybind
+          (if (not major-keybind 'undefined)
               major-keybind
             keybind))
       keybind)))
