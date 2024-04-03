@@ -52,11 +52,15 @@
   "Alist of symbols of state names to keymaps.")
 
 (defvar miao-bypass-mode-list
-  '(dired-mode
+  '(calc-mode
+    dired-mode
     pdf-view-mode
     magit-status-mode
     ediff-mode
     mu4e-main-mode))
+
+(defvar miao-bypass-keymap-hash
+  #s(hash-table))
 
 (defvar miao-bypass-mode-keys
   (append (number-sequence ?A ?Z) (number-sequence ?a ?z)))

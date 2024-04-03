@@ -68,6 +68,7 @@
 (defvar miao-bypass-state-keymap
   (let ((keymap (make-sparse-keymap)))
     (suppress-keymap keymap t)
+    (set-keymap-parent keymap miao-normal-state-keymap)
     keymap)
   "Keymap for Miao bypass state.")
 

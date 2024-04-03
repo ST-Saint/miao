@@ -121,14 +121,17 @@
           (progn
             (miao--disable-current-mode)
             (setq miao--current-state 'bypass)
-            (set-keymap-parent miao-bypass-state-keymap miao-normal-state-keymap)
-
-            ;; make a-zA-Z transparent
-            (dolist (chr miao-bypass-mode-keys)
-              (let ((miao-key (lookup-key miao-normal-state-keymap (char-to-string chr)))
-                    (major-key (lookup-key (current-local-map) (char-to-string chr))))
-                (if (and miao-key major-key)
-                    (define-key miao-bypass-state-keymap (char-to-string chr) major-key))))))
+            (let ((keymap (gethash 'major-mode miao-bypass-keymap-hash)))
+              (unless (equal keymap 'default)
+                (setq keymap (make-sparse-keymap))
+                (suppress-keymap keymap t)
+                ;; make a-zA-Z transparent
+                (dolist (chr miao-bypass-mode-keys)
+                  (let ((miao-key (lookup-key miao-normal-state-keymap (char-to-string chr)))
+                        (major-key (lookup-key (current-local-map) (char-to-string chr))))
+                    (if (and miao-key major-key)
+                        (define-key keymap (char-to-string chr) major-key)))))
+              (add-to-list 'minor-mode-overriding-map-alist (cons major-mode keymap)))))
 
     (setq miao--current-state nil)))
 
