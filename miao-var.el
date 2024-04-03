@@ -51,6 +51,9 @@
     (bypass  . ,miao-bypass-state-keymap))
   "Alist of symbols of state names to keymaps.")
 
+(defvar miao-leader-major-keymap-hash
+  #s(hash-table))
+
 (defvar miao-bypass-mode-list
   '(calc-mode
     dired-mode

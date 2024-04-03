@@ -78,8 +78,16 @@
 
 (defun miao--leader-lookup-key (keys)
   (let* ((overriding-local-map miao-leader-state-keymap)
-         (keybind (key-binding keys)))
-    keybind))
+         (keybind (key-binding keys))
+         (leader-major-keymap (gethash major-mode miao-leader-major-keymap-hash)))
+
+    (if leader-major-keymap
+        (let* ((overriding-local-map leader-major-keymap)
+               (major-keybind (key-binding keys)))
+          (if major-keybind
+              major-keybind
+            keybind))
+      keybind)))
 
 (defun miao--leader-try-execute ()
   "Try execute command.

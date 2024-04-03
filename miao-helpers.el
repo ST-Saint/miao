@@ -63,10 +63,20 @@ Example usage:
        (pcase-dolist (`(,key . ,def) keybinds)
          (define-key map (kbd key) def))))
 
+
+(defun miao-leader-get-major-keymap (major)
+  (let ((keymap (gethash major miao-leader-major-keymap-hash)))
+    (if keymap
+        keymap
+      (setq keymap (make-keymap))
+      (suppress-keymap keymap t)
+      (puthash major keymap miao-leader-major-keymap-hash)
+      keymap)))
+
 (defun miao-leader-define-major-keys (major &rest keybinds)
   "Define KEYBINDS in miao leader mode."
   (declare (indent 1))
-  (let ((map (alist-get 'leader miao-keymap-alist)))
+  (let ((map (miao-leader-get-major-keymap major)))
        (pcase-dolist (`(,key . ,def) keybinds)
          (define-key map (kbd key) def))))
 
