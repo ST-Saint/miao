@@ -84,9 +84,10 @@
     (if leader-major-keymap
         (let* ((overriding-local-map leader-major-keymap)
                (major-keybind (key-binding keys)))
-          (if (not (equal major-keybind 'undefined))
-              major-keybind
-            keybind))
+          (if (or (not major-keybind)
+                  (equal major-keybind 'undefined))
+              keybind
+            major-keybind))
       keybind)))
 
 (defun miao--leader-try-execute ()
