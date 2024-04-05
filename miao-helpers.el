@@ -63,7 +63,6 @@ Example usage:
        (pcase-dolist (`(,key . ,def) keybinds)
          (define-key map (kbd key) def))))
 
-
 (defun miao-leader-get-major-keymap (major)
   (let ((keymap (gethash major miao-leader-major-keymap-hash)))
     (if keymap

@@ -22,119 +22,139 @@
 
 ;;; Code:
 
-(defmacro miao--state-mode-p (name)
-  `(defun ,(miao--intern name "-p") ()
-     (bound-and-true-p ,(miao--intern name))))
 
-(defun miao--intern (name &optional p)
-  (intern (concat "miao-" (symbol-name name) "-mode" p)))
+(defun miao--switch-state (state)
+  "Switch to STATE execute 'miao-switch-state-hook unless NO-HOOK is non-nil."
+  (unless (eq state (miao--current-state))
+    (let ((mode (alist-get state miao-state-mode-alist)))
+      (funcall mode 1))))
 
-(defun miao--set-cursor-type (type)
-  (if (display-graphic-p)
-      (setq cursor-type type)
-    (let* ((shape (or (car-safe type) type))
-           (param (cond ((eq shape 'bar) "6")
-                        ((eq shape 'hbar) "4")
-                        (t "2"))))
-      (send-string-to-terminal (concat "\e[" param " q")))))
+(defun miao--current-state ()
+  miao--current-state)
 
-(define-minor-mode miao-mode
-  "Get your foos in the right places."
-  :lighter " Miao"
-  :keymap miao-mode-keymap
-  (if miao-mode
-      (progn
-        (if (member major-mode miao-bypass-mode-list)
-            (miao-bypass-mode)
-          (miao-normal-mode t)))
-    (miao--disable-current-mode)))
+(defun miao-switch-to-previous-state ()
+  (miao--switch-state miao--leader-previous-state))
 
-;;;###autoload
-(define-global-minor-mode miao-global-mode miao-mode
-  (lambda ()
-    (unless (minibufferp)
-      (miao-mode 1)))
-  (add-to-ordered-list 'emulation-mode-map-alists
-                       `((miao-normal-mode . ,miao-normal-state-keymap)))
-  (add-to-ordered-list 'emulation-mode-map-alists
-                       `((miao-beacon-mode . ,miao-leader-base-keymap)))
-  (add-to-ordered-list 'emulation-mode-map-alists
-                       `((miao-keypad-mode . ,miao-leader-state-keymap))))
+(defun miao--event-key (event)
+  (let ((c (event-basic-type event)))
+    (if (and (char-or-string-p c)
+             (member 'shift (event-modifiers event)))
+        (upcase c)
+      c)))
 
-(defun miao--disable-current-mode ()
-  (when miao--current-state
-    (funcall (miao--intern miao--current-state) -1)))
+(defun miao--toggle-bypass-mode ()
+  (interactive)
+  (if (bound-and-true-p miao-bypass-mode)
+      (miao-normal-mode)
+    (miao-bypass-mode)))
 
-(define-minor-mode miao-normal-mode
-  "Get your foos in the right places."
-  :lighter " N"
-  :keymap miao-normal-state-keymap
-  (if miao-normal-mode
-      (if (not (equal miao--current-state 'normal))
-          ;; switch to normal mode: disable current + set normal
-          (progn
-            (miao--disable-current-mode)
-            (setq miao--current-state 'normal)
-            (setq cursor-type 'box)))
-    (setq miao--current-state nil)))
+(defun miao--parse-input-event (event)
+  (cond
+   ((equal event 32)
+    "SPC")
+   ((characterp event)
+    (string event))
+   ((equal 'tab event)
+    "TAB")
+   ((equal 'return event)
+    "RET")
+   ((equal 'backspace event)
+    "DEL")
+   ((equal 'escape event)
+    "ESC")
+   ((symbolp event)
+    (format "<%s>" event))
+   (t nil)))
 
-(miao--state-mode-p normal)
+(defun miao-leader-self-insert ()
+  "Default command when leader state is enabled."
+  (interactive)
+  (setq this-command last-command)
+  (when-let ((event (miao--event-key last-input-event))
+             (key (miao--parse-input-event event)))
+    (push (cons 'literal key) miao--leader-keys)
+    ;; Try execute if the input is valid.
+    (miao--leader-try-execute)))
 
-(define-minor-mode miao-insert-mode
-  "Get your foos in the right places."
-  :lighter " I"
-  :keymap miao-insert-state-keymap
-  (if miao-insert-mode
-      (if (not (equal miao--current-state 'insert))
-          ;; switch to insert mode: disable current + set insert
-          (progn
-            (miao--disable-current-mode)
-            (setq miao--current-state 'insert)
-            (setq cursor-type 'bar)))
-    (setq miao--current-state nil)))
+(defun miao--leader-lookup-key (keys)
+  (let* ((overriding-local-map miao-leader-state-keymap)
+         (keybind (key-binding keys))
+         (leader-major-keymap (gethash major-mode miao-leader-major-keymap-hash)))
 
-(miao--state-mode-p insert)
+    (if leader-major-keymap
+        (let* ((overriding-local-map leader-major-keymap)
+               (major-keybind (key-binding keys)))
+          (if (or (not major-keybind)
+                  (equal major-keybind 'undefined))
+              keybind
+            major-keybind))
+      keybind)))
 
-(define-minor-mode miao-leader-mode
-  "Get your foos in the right places."
-  :lighter " L"
-  :keymap miao-leader-base-keymap
-  (setq miao--leader-previous-state miao--current-state)
-  (if miao-leader-mode
-      (if (not (equal miao--current-state 'leader))
-          ;; switch to leader mode: disable current + set leader
-          (progn
-            (miao--disable-current-mode)
-            (setq miao--current-state 'leader)
-            (setq overriding-local-map miao-leader-base-keymap
-                  overriding-terminal-local-map nil)))
-    (setq miao--current-state nil)))
+(defun miao--leader-try-execute ()
+  "Try execute command.
 
-(define-minor-mode miao-bypass-mode
-  "Get your foos in the right places."
-  :lighter " B"
-  :keymap miao-bypass-state-keymap
-  (setq miao--bypass-previous-state miao--current-state)
-  (if miao-bypass-mode
-      (if (not (equal miao--current-state 'bypass))
-          ;; switch to bypass mode: disable current + set bypass
-          (progn
-            (miao--disable-current-mode)
-            (setq miao--current-state 'bypass)
-            (let ((keymap (gethash major-mode miao-bypass-keymap-hash)))
-              (unless keymap
-                (setq keymap (make-sparse-keymap))
-                (suppress-keymap keymap t)
-                ;; make a-zA-Z transparent
-                (dolist (chr miao-bypass-mode-keys)
-                  (let ((miao-key (lookup-key miao-normal-state-keymap (char-to-string chr)))
-                        (major-key (lookup-key (current-local-map) (char-to-string chr))))
-                    (if (and miao-key major-key)
-                        (define-key keymap (char-to-string chr) major-key))))
-                (puthash major-mode keymap miao-bypass-keymap-hash))
-              (add-to-list 'minor-mode-overriding-map-alist (cons miao-bypass-mode keymap)))))
+If there is a command available on the current key binding,
+try replacing the last modifier and try again."
+  (let* ((key-str (miao--leader-format-keys nil))
+         (cmd (miao--leader-lookup-key (read-kbd-macro key-str))))
+    (cond
+     ((commandp cmd t)
+      (setq current-prefix-arg miao--prefix-arg
+            miao--prefix-arg nil)
+      (let ((miao--leader-this-command cmd))
+        (miao-leader-quit)
+        (setq real-this-command cmd
+              this-command cmd)
+        (call-interactively cmd)))
+     ((keymapp cmd)
+      t)
+     ((equal 'control (caar miao--leader-keys))
+      (setcar miao--leader-keys (cons 'literal (cdar miao--leader-keys)))
+      (miao--leader-try-execute))
+     (t
+      (setq miao--prefix-arg nil)
+      (message "[Miao] %s is undefined" (miao--leader-format-keys nil))
+      (miao-leader-quit)))))
 
-    (setq miao--current-state nil)))
+(defun miao--leader-format-single-key (key)
+  "Return a display format for input KEY."
+  (cl-case (car key)
+    (meta (format "M-%s" (cdr key)))
+    (control (format "C-%s" (miao--leader-format-upcase (cdr key))))
+    (both (format "C-M-%s" (miao--leader-format-upcase (cdr key))))
+    (literal (cdr key))))
 
+(defun miao--leader-format-upcase (k)
+  "Return S-k for upcase k."
+  (let ((case-fold-search nil))
+    (if (and (stringp k)
+             (string-match-p "^[A-Z]$" k))
+        (format "S-%s" (downcase k))
+      k)))
+
+(defun miao--leader-format-keys (&optional prompt)
+  "Return a display format for current input keys."
+  (let ((result ""))
+    (setq result
+          (thread-first
+            (mapcar #'miao--leader-format-single-key miao--leader-keys)
+            (reverse)
+            (string-join " ")))
+    (cond
+     ;; (miao--use-both
+     ;;  (setq result
+     ;;        (if (string-empty-p result)
+     ;;            "C-M-"
+     ;;          (concat result " C-M-"))))
+     ;; (miao--use-meta
+     ;;  (setq result
+     ;;        (if (string-empty-p result)
+     ;;            "M-"
+     ;;          (concat result " M-"))))
+     ;; (miao--use-literal
+     ;;  (setq result (concat result " ○")))
+     (prompt
+      (setq result (concat result " C-"))))
+    result))
 
 (provide 'miao-core)

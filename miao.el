@@ -27,8 +27,8 @@
 
 (require 'miao-keymap)
 (require 'miao-var)
-(require 'miao-utils)
 (require 'miao-core)
+(require 'miao-mode)
 (require 'miao-func)
 (require 'miao-helpers)
 
