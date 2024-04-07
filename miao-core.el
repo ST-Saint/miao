@@ -1,4 +1,4 @@
-;;; miao-core.el --- Meow variables  -*- lexical-binding: t; -*-
+;;; miao-core.el --- Miao variables  -*- lexical-binding: t; -*-
 
 ;; This file is not part of GNU Emacs.
 
@@ -73,7 +73,7 @@
   (when-let ((event (miao--event-key last-input-event))
              (key (miao--parse-input-event event)))
     (push (cons 'literal key) miao--leader-keys)
-    ;; Try execute if the input is valid.
+     ;; Try execute if the input is valid.
     (miao--leader-try-execute)))
 
 (defun miao--leader-lookup-key (keys)
@@ -119,9 +119,6 @@ try replacing the last modifier and try again."
 (defun miao--leader-format-single-key (key)
   "Return a display format for input KEY."
   (cl-case (car key)
-    (meta (format "M-%s" (cdr key)))
-    (control (format "C-%s" (miao--leader-format-upcase (cdr key))))
-    (both (format "C-M-%s" (miao--leader-format-upcase (cdr key))))
     (literal (cdr key))))
 
 (defun miao--leader-format-upcase (k)
@@ -141,18 +138,6 @@ try replacing the last modifier and try again."
             (reverse)
             (string-join " ")))
     (cond
-     ;; (miao--use-both
-     ;;  (setq result
-     ;;        (if (string-empty-p result)
-     ;;            "C-M-"
-     ;;          (concat result " C-M-"))))
-     ;; (miao--use-meta
-     ;;  (setq result
-     ;;        (if (string-empty-p result)
-     ;;            "M-"
-     ;;          (concat result " M-"))))
-     ;; (miao--use-literal
-     ;;  (setq result (concat result " ○")))
      (prompt
       (setq result (concat result " C-"))))
     result))

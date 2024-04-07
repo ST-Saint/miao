@@ -25,8 +25,8 @@
 
 ;;; Code:
 
-(require 'miao-keymap)
 (require 'miao-var)
+(require 'miao-keymap)
 (require 'miao-core)
 (require 'miao-mode)
 (require 'miao-func)

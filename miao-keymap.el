@@ -1,4 +1,4 @@
-;;; miao-keymap.el --- Meow variables  -*- lexical-binding: t; -*-
+;;; miao-keymap.el --- Miao variables  -*- lexical-binding: t; -*-
 
 ;; This file is not part of GNU Emacs.
 
@@ -53,10 +53,16 @@
 (defvar miao-leader-base-keymap
   (let ((keymap (make-sparse-keymap)))
     (suppress-keymap keymap t)
+    (dolist (key miao-leader-mode-keys)
+      (define-key keymap (kbd key) 'miao-leader-self-insert)
+      (define-key keymap (kbd (concat "C-" key)) 'miao-leader-self-insert)
+      (define-key keymap (kbd (concat "M-" key)) 'miao-leader-self-insert)
+      (define-key keymap (kbd (concat "C-M-" key)) 'miao-leader-self-insert))
     (define-key keymap (kbd "<escape>") 'miao-leader-quit)
+    (define-key keymap (kbd "C-g") 'miao-leader-quit)
     (define-key keymap [remap keyboard-quit] 'miao-leader-quit)
     (define-key keymap [remap self-insert-command] 'miao-leader-self-insert)
-    keymap)
+   keymap)
   "Keymap for Miao leader state.")
 
 (defvar miao-leader-state-keymap
@@ -71,5 +77,20 @@
     (set-keymap-parent keymap miao-normal-state-keymap)
     keymap)
   "Keymap for Miao bypass state.")
+
+
+(defvar miao-state-mode-alist
+  '((normal . miao-normal-mode)
+    (insert . miao-insert-mode)
+    (leader . miao-leader-mode)
+    (bypass  . miao-bypass-mode))
+  "Alist of miao states -> modes")
+
+(defvar miao-keymap-alist
+  `((normal . ,miao-normal-state-keymap)
+    (insert . ,miao-insert-state-keymap)
+    (leader . ,miao-leader-state-keymap)
+    (bypass  . ,miao-bypass-state-keymap))
+  "Alist of symbols of state names to keymaps.")
 
 (provide 'miao-keymap)

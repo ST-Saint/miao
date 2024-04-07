@@ -1,4 +1,4 @@
-;;; miao-mode.el --- Meow variables  -*- lexical-binding: t; -*-
+;;; miao-mode.el --- Miao variables  -*- lexical-binding: t; -*-
 
 ;; This file is not part of GNU Emacs.
 

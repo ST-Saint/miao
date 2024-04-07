@@ -1,4 +1,4 @@
-;;; miao-var.el --- Meow variables  -*- lexical-binding: t; -*-
+;;; miao-var.el --- Miao variables  -*- lexical-binding: t; -*-
 
 ;; This file is not part of GNU Emacs.
 
@@ -37,22 +37,30 @@
                                    (leader . "L")
                                    (bypass . "B")))
 
-(defvar miao-state-mode-alist
-  '((normal . miao-normal-mode)
-    (insert . miao-insert-mode)
-    (leader . miao-leader-mode)
-    (bypass  . miao-bypass-mode))
-  "Alist of miao states -> modes")
-
-(defvar miao-keymap-alist
-  `((normal . ,miao-normal-state-keymap)
-    (insert . ,miao-insert-state-keymap)
-    (leader . ,miao-leader-state-keymap)
-    (bypass  . ,miao-bypass-state-keymap))
-  "Alist of symbols of state names to keymaps.")
-
 (defvar miao-leader-major-keymap-hash
   #s(hash-table))
+
+(defvar miao-leader-mode-keys
+  ;; ! → / (33, 47)
+  ;; 0 → 9 (48, 57)
+  ;; : → @ (58, 64)
+  ;; A -> Z
+  ;; ^ -> `
+  ;; a -> z
+  ;; { -> ~
+  (mapcar
+   (lambda (c)
+     (if (numberp c)
+       (char-to-string c)
+       c))
+   (append (number-sequence ?! ?/)
+           (number-sequence ?0 ?9)
+           (number-sequence ?: ?@)
+           (number-sequence ?A ?Z)
+           (number-sequence ?^ ?`)
+           (number-sequence ?A ?Z)
+           (number-sequence ?\{ ?~)
+           '("<up>" "<down>" "<left>" "<right>"))))
 
 (defvar miao-bypass-mode-list
   '(calc-mode
