@@ -62,14 +62,14 @@
 (defun miao-mark-string ()
   (interactive)
   (let ((bound (bounds-of-thing-at-point 'string)))
-    (goto-char (car bound))
-    (set-mark (cdr bound))))
+    (goto-char (cdr bound))
+    (set-mark (car bound))))
 
 (defun miao-mark-string-inner ()
   (interactive)
   (let ((bound (bounds-of-thing-at-point 'string)))
-    (goto-char (+ 1 (car bound)))
-    (set-mark (- (cdr bound) 1))))
+    (goto-char (- (cdr bound) 1))
+    (set-mark (+ 1 (car bound)))))
 
 (defun miao-mark-list-inner ()
   (interactive)
@@ -85,8 +85,8 @@
                  ((looking-at "[\(\[\{]") (point))
                  (t (or (backward-up-list 1 t t)) (point)))))
         (end (scan-sexps (point) 1)))
-    (set-mark (- end 1))
-    (goto-char (+ 1 begin))))
+    (goto-char (- end 1))
+    (set-mark (+ begin 1))))
 
 (defun miao-mark-list ()
   (interactive)
@@ -96,8 +96,8 @@
                     ((looking-at "[\(\[\{]") (point))
                     (t (or (backward-up-list 1 t t)) (point)))))
         (end (scan-sexps (point) 1)))
-    (set-mark end)
-    (goto-char begin)))
+    (goto-char end)
+    (set-mark begin)))
 
 (defun miao-toggle-mark-point ()
   (interactive)
@@ -111,6 +111,10 @@
 (defun miao-quit-window ()
   (interactive)
   (quit-window))
+
+(defun miao-delete-window ()
+  (interactive)
+  (delete-window))
 
 (defun miao-mark-line ()
   (interactive)
