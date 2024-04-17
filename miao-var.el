@@ -58,7 +58,7 @@
            (number-sequence ?: ?@)
            (number-sequence ?A ?Z)
            (number-sequence ?^ ?`)
-           (number-sequence ?A ?Z)
+           (number-sequence ?a ?z)
            (number-sequence ?\{ ?~)
            '("<up>" "<down>" "<left>" "<right>"))))
 
@@ -68,13 +68,20 @@
     pdf-view-mode
     magit-status-mode
     ediff-mode
-    mu4e-main-mode))
+    mu4e-main-mode
+    mu4e-headers-mode))
 
 (defvar miao-bypass-keymap-hash
   #s(hash-table))
 
 (defvar miao-bypass-mode-keys
-  (append (number-sequence ?A ?Z) (number-sequence ?a ?z)))
+  (append (number-sequence ?! ?/)
+          (number-sequence ?0 ?9)
+          (number-sequence ?: ?@)
+          (number-sequence ?A ?Z)
+          (number-sequence ?^ ?`)
+          (number-sequence ?a ?z)
+          (number-sequence ?\{ ?~)))
 
 (defface miao-modeline-face
   '((t :weight bold))
