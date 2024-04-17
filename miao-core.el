@@ -102,9 +102,9 @@ try replacing the last modifier and try again."
       (setq current-prefix-arg miao--prefix-arg
             miao--prefix-arg nil)
       (let ((miao--leader-this-command cmd))
-        (miao-leader-quit)
         (setq real-this-command cmd
               this-command cmd)
+        (miao-leader-quit)
         (call-interactively cmd)))
      ((keymapp cmd)
       t)
