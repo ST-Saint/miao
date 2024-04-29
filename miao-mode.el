@@ -107,7 +107,8 @@
             (miao--disable-current-mode)
             (setq miao--current-state 'leader)
             (setq overriding-local-map miao-leader-base-keymap
-                  overriding-terminal-local-map nil)))
+                  overriding-terminal-local-map nil)
+            (miao--leader-describe-keymap miao-leader-state-keymap)))
     (setq miao--current-state nil)))
 
 (define-minor-mode miao-bypass-mode

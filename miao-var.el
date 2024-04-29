@@ -62,6 +62,15 @@
            (number-sequence ?\{ ?~)
            '("<up>" "<down>" "<left>" "<right>"))))
 
+(defcustom miao-leader-describe-delay
+  0.5
+  "The delay in seconds before popup keybinding descriptions appear."
+  :group 'miao
+  :type 'number)
+
+(defvar miao--leader-keymap-description-activated nil
+  "Whether LEADER keymap description is already activated.")
+
 (defvar miao-bypass-mode-list
   '(calc-mode
     dired-mode
@@ -69,7 +78,8 @@
     magit-status-mode
     ediff-mode
     mu4e-main-mode
-    mu4e-headers-mode))
+    mu4e-headers-mode
+    org-agenda-mode))
 
 (defvar miao-bypass-keymap-hash
   #s(hash-table))

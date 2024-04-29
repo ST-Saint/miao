@@ -73,7 +73,7 @@
   (when-let ((event (miao--event-key last-input-event))
              (key (miao--parse-input-event event)))
     (push (cons 'literal key) miao--leader-keys)
-     ;; Try execute if the input is valid.
+    ;; Try execute if the input is valid.
     (miao--leader-try-execute)))
 
 (defun miao--leader-lookup-key (keys)
@@ -89,6 +89,14 @@
               keybind
             major-keybind))
       keybind)))
+
+(defun miao--leader-describe-keymap (keymap)
+  (let (overriding-local-map)
+    (when (or
+           miao--leader-keymap-description-activated
+           (setq miao--leader-keymap-description-activated
+                 (sit-for miao-leader-describe-delay t)))
+      (which-key--create-buffer-and-show nil keymap nil (concat "Miao: " (miao--leader-format-keys))))))
 
 (defun miao--leader-try-execute ()
   "Try execute command.
@@ -107,10 +115,7 @@ try replacing the last modifier and try again."
         (miao-leader-quit)
         (call-interactively cmd)))
      ((keymapp cmd)
-      t)
-     ((equal 'control (caar miao--leader-keys))
-      (setcar miao--leader-keys (cons 'literal (cdar miao--leader-keys)))
-      (miao--leader-try-execute))
+      (miao--leader-describe-keymap cmd))
      (t
       (setq miao--prefix-arg nil)
       (message "[Miao] %s is undefined" (miao--leader-format-keys nil))
