@@ -91,12 +91,11 @@
       keybind)))
 
 (defun miao--leader-describe-keymap (keymap)
-  (let (overriding-local-map)
-    (when (or
-           miao--leader-keymap-description-activated
-           (setq miao--leader-keymap-description-activated
-                 (sit-for miao-leader-describe-delay t)))
-      (which-key--create-buffer-and-show nil keymap nil (concat "Miao: " (miao--leader-format-keys))))))
+  (when (or
+         miao--leader-keymap-description-activated
+         (setq miao--leader-keymap-description-activated
+               (sit-for miao-leader-describe-delay t)))
+    (which-key--create-buffer-and-show nil keymap nil (concat "Miao: " (miao--leader-format-keys)))))
 
 (defun miao--leader-try-execute ()
   "Try execute command.
@@ -108,12 +107,12 @@ try replacing the last modifier and try again."
     (cond
      ((commandp cmd t)
       (setq current-prefix-arg miao--prefix-arg
-            miao--prefix-arg nil)
-      (let ((miao--leader-this-command cmd))
-        (setq real-this-command cmd
-              this-command cmd)
-        (miao-leader-quit)
-        (call-interactively cmd)))
+            miao--prefix-arg nil
+            real-this-command cmd
+            this-command cmd)
+      (message "[Miao] exec %s" cmd)
+      (miao-leader-quit)
+      (call-interactively cmd))
      ((keymapp cmd)
       (miao--leader-describe-keymap cmd))
      (t

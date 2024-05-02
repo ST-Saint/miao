@@ -57,9 +57,7 @@
   (add-to-ordered-list 'emulation-mode-map-alists
                        `((miao-normal-mode . ,miao-normal-state-keymap)))
   (add-to-ordered-list 'emulation-mode-map-alists
-                       `((miao-beacon-mode . ,miao-leader-base-keymap)))
-  (add-to-ordered-list 'emulation-mode-map-alists
-                       `((miao-keypad-mode . ,miao-leader-state-keymap))))
+                       `((miao-leader-mode . ,miao-leader-base-keymap))))
 
 (defun miao--disable-current-mode ()
   (when miao--current-state
@@ -126,14 +124,13 @@
               (unless keymap
                 (setq keymap (make-sparse-keymap))
                 (suppress-keymap keymap t)
-                ;; make a-zA-Z transparent
                 (dolist (chr miao-bypass-mode-keys)
                   (let ((miao-key (lookup-key miao-normal-state-keymap (char-to-string chr)))
                         (major-key (lookup-key (current-local-map) (char-to-string chr))))
                     (if (and miao-key major-key)
                         (define-key keymap (char-to-string chr) major-key))))
                 (puthash major-mode keymap miao-bypass-keymap-hash))
-              (add-to-list 'minor-mode-overriding-map-alist (cons miao-bypass-mode keymap)))))
+              (add-to-list 'minor-mode-overriding-map-alist `(miao-mode . ,keymap)))))
 
     (setq miao--current-state nil)))
 
