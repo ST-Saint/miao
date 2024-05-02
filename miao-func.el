@@ -51,25 +51,25 @@
 
 (defun miao-mark-word ()
   (interactive)
-  (let ((bound (bounds-of-thing-at-point 'word)))
+  (when-let ((bound (bounds-of-thing-at-point 'word)))
     (goto-char (cdr bound))
     (set-mark (car bound))))
 
 (defun miao-mark-symbol ()
   (interactive)
-  (let ((bound (bounds-of-thing-at-point 'symbol)))
+  (when-let ((bound (bounds-of-thing-at-point 'symbol)))
     (goto-char (cdr bound))
     (set-mark (car bound))))
 
 (defun miao-mark-string ()
   (interactive)
-  (let ((bound (bounds-of-thing-at-point 'string)))
+  (when-let ((bound (bounds-of-thing-at-point 'string)))
     (goto-char (cdr bound))
     (set-mark (car bound))))
 
 (defun miao-mark-string-inner ()
   (interactive)
-  (let ((bound (bounds-of-thing-at-point 'string)))
+  (when-let ((bound (bounds-of-thing-at-point 'string)))
     (goto-char (- (cdr bound) 1))
     (set-mark (+ 1 (car bound)))))
 
@@ -157,12 +157,12 @@
 
 (defun miao-next-symbol-item (direction)
   (if (not (region-active-p))
-      (let* ((bounds (bounds-of-thing-at-point 'symbol))
-             (begin (car bounds))
-             (end (cdr bounds))
-             (offset (- (point) begin))
-             (re (concat "\\_<" (regexp-quote (buffer-substring-no-properties begin end)) "\\_>"))
-             (case-fold-search nil))
+      (when-let* ((bounds (bounds-of-thing-at-point 'symbol))
+                  (begin (car bounds))
+                  (end (cdr bounds))
+                  (offset (- (point) begin))
+                  (re (concat "\\_<" (regexp-quote (buffer-substring-no-properties begin end)) "\\_>")))
+        (setq case-fold-search nil)
         (re-search-forward re nil t direction))))
 
 (defun miao-next-item ()
