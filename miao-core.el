@@ -110,7 +110,6 @@ try replacing the last modifier and try again."
             miao--prefix-arg nil
             real-this-command cmd
             this-command cmd)
-      (message "[Miao] exec %s" cmd)
       (miao-leader-quit)
       (call-interactively cmd))
      ((keymapp cmd)
