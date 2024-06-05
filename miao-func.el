@@ -127,6 +127,9 @@
 
 (defun miao-mark-line ()
   (interactive)
+  (unless display-line-numbers
+    (display-line-numbers-mode t)
+    (add-hook 'deactivate-mark-hook (lambda () (display-line-numbers-mode -1))))
   (if (region-active-p)
       (if (equal (point) (region-end))
           (progn (next-logical-line) (end-of-line))
