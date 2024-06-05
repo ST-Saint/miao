@@ -127,7 +127,8 @@
 
 (defun miao-mark-line ()
   (interactive)
-  (unless display-line-numbers
+  (if global-display-line-numbers-mode
+      (remove-hook 'deactivate-mark-hook (lambda () (display-line-numbers-mode -1)))
     (display-line-numbers-mode t)
     (add-hook 'deactivate-mark-hook (lambda () (display-line-numbers-mode -1))))
   (if (region-active-p)
@@ -147,7 +148,13 @@
         (end (pos-eol)))
     (goto-char begin)
     (set-mark (+ 1 end))
-    (run-with-idle-timer 0.5 nil (lambda () (progn (deactivate-mark) (goto-char pos))))))
+    (run-with-idle-timer 0.5
+                         nil
+                         (lambda ()
+                           (if (region-active-p)
+                             (progn
+                               (deactivate-mark)
+                               (goto-char pos)))))))
 
 (defun miao-next-region-item ()
   (if (region-active-p)
