@@ -48,6 +48,10 @@
       (miao-normal-mode)
     (miao-bypass-mode)))
 
+(defun miao-self-insert-command (N &optional C)
+  (interactive "p")
+  (self-insert-command N C))
+
 (defun miao--parse-input-event (event)
   (cond
    ((equal event 32)

@@ -31,6 +31,12 @@
 (defvar miao-normal-state-keymap
   (let ((keymap (make-sparse-keymap)))
     (suppress-keymap keymap t)
+    (let ((symbols (append (number-sequence ?! ?/)
+                           (number-sequence ?: ?@)
+                           (number-sequence ?\[ ?`)
+                           (number-sequence ?\{ ?~))))
+      (dolist (key symbols)
+        (define-key keymap (kbd (char-to-string key)) #'miao-self-insert-command)))
     (define-key keymap (kbd "i") 'miao-insert-mode)
     (define-key keymap (kbd "I") 'miao-insert-end)
     (define-key keymap (kbd "a") 'miao-insert-mode)
