@@ -46,7 +46,7 @@
     (define-key keymap (kbd "h") 'left-char)
     (define-key keymap (kbd "l") 'right-char)
     (define-key keymap (kbd "<SPC>") 'miao-leader-mode)
-    (define-key keymap (kbd "C-c C-z") 'miao--toggle-bypass-mode)
+    (define-key keymap (kbd "C-z") 'miao--toggle-bypass-mode)
     keymap)
   "Keymap for Miao normal state.")
 
@@ -80,7 +80,8 @@
 (defvar miao-bypass-state-keymap
   (let ((keymap (make-sparse-keymap)))
     (suppress-keymap keymap t)
-    (set-keymap-parent keymap miao-normal-state-keymap)
+    (define-key keymap (kbd "C-z") 'miao--toggle-bypass-mode)
+    (define-key keymap (kbd "M-<SPC>") 'miao-leader-mode)
     keymap)
   "Keymap for Miao bypass state.")
 

@@ -39,7 +39,7 @@
       (send-string-to-terminal (concat "\e[" param " q")))))
 
 (define-minor-mode miao-mode
-  "Get your foos in the right places."
+  "Miao mode"
   :lighter " Miao"
   :keymap miao-mode-keymap
   (if miao-mode
@@ -64,7 +64,7 @@
     (funcall (miao--intern miao--current-state) -1)))
 
 (define-minor-mode miao-normal-mode
-  "Get your foos in the right places."
+  "Miao normal mode"
   :lighter " N"
   :keymap miao-normal-state-keymap
   (if miao-normal-mode
@@ -79,7 +79,7 @@
 (miao--state-mode-p normal)
 
 (define-minor-mode miao-insert-mode
-  "Get your foos in the right places."
+  "Miao insert mode"
   :lighter " I"
   :keymap miao-insert-state-keymap
   (if miao-insert-mode
@@ -94,7 +94,7 @@
 (miao--state-mode-p insert)
 
 (define-minor-mode miao-leader-mode
-  "Get your foos in the right places."
+  "Miao leader mode"
   :lighter " L"
   :keymap miao-leader-base-keymap
   (setq miao--leader-previous-state miao--current-state)
@@ -110,27 +110,28 @@
     (setq miao--current-state nil)))
 
 (define-minor-mode miao-bypass-mode
-  "Get your foos in the right places."
+  "Miao bypass mode"
   :lighter " B"
   :keymap miao-bypass-state-keymap
   (setq miao--bypass-previous-state miao--current-state)
   (if miao-bypass-mode
-      (if (not (equal miao--current-state 'bypass))
-          ;; switch to bypass mode: disable current + set bypass
-          (progn
-            (miao--disable-current-mode)
-            (setq miao--current-state 'bypass)
-            (let ((keymap (gethash major-mode miao-bypass-keymap-hash)))
-              (unless keymap
-                (setq keymap (make-sparse-keymap))
-                (suppress-keymap keymap t)
-                (dolist (chr miao-bypass-mode-keys)
-                  (let ((miao-key (lookup-key miao-normal-state-keymap (char-to-string chr)))
-                        (major-key (lookup-key (current-local-map) (char-to-string chr))))
-                    (if (and miao-key major-key)
-                        (define-key keymap (char-to-string chr) major-key))))
-                (puthash major-mode keymap miao-bypass-keymap-hash))
-              (add-to-list 'minor-mode-overriding-map-alist `(miao-mode . ,keymap)))))
+      (when (not (equal miao--current-state 'bypass))
+        ;; switch to bypass mode: disable current + set bypass
+        (miao--disable-current-mode)
+        (setq miao--current-state 'bypass)
+        (let ((keymap (gethash major-mode miao-bypass-keymap-hash)))
+          (unless keymap
+            (setq keymap (make-sparse-keymap))
+            (suppress-keymap keymap t)
+            (dolist (chr miao-bypass-mode-keys)
+              (let ((miao-func (lookup-key miao-normal-state-keymap (char-to-string chr)))
+                    (major-func (lookup-key (current-local-map) (char-to-string chr))))
+                (if major-func
+                    (define-key keymap (char-to-string chr) major-func)
+                  (if miao-func
+                    (define-key keymap (char-to-string chr) miao-func)))))
+            (puthash major-mode keymap miao-bypass-keymap-hash))
+          (add-to-list 'minor-mode-overriding-map-alist `(miao-mode . ,keymap))))
 
     (setq miao--current-state nil)))
 
