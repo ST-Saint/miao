@@ -127,10 +127,6 @@
 
 (defun miao-mark-line ()
   (interactive)
-  (if display-line-numbers-mode
-      (remove-hook 'deactivate-mark-hook (lambda () (display-line-numbers-mode -1)))
-    (display-line-numbers-mode t)
-    (add-hook 'deactivate-mark-hook (lambda () (display-line-numbers-mode -1))))
   (if (region-active-p)
       (if (equal (point) (region-end))
           (progn (next-logical-line) (end-of-line))
@@ -141,7 +137,12 @@
       (goto-char end)
       (set-mark begin))))
 
+(defun miao-unmark-line ()
+  (if (not miao-display-line-number)
+      (display-line-numbers-mode -1)))
+
 (defun miao-cursor-blink ()
+  ;; TODO: use overlay instead of marking region
   (interactive)
   (let ((pos (point))
         (begin (pos-bol))
@@ -156,13 +157,122 @@
                                (deactivate-mark)
                                (goto-char pos)))))))
 
+(defun miao--add-fake-cursor-at-point (pos)
+  "Create an overlay to draw a fake cursor as miacro at POS."
+  (let ((ov (make-overlay pos (1+ pos) nil t)))
+    (overlay-put ov 'face 'miao-miacro-fake-cursor)
+    (overlay-put ov 'miao-miacro-type 'cursor)
+    ov))
+
+(defun miao--add-overlay-symbol (begin end)
+  "Create an overlay to draw a fake cursor as miacro at POS."
+  (let ((ov (make-overlay begin end nil t)))
+    (overlay-put ov 'face 'miao-miacro-fake-symbol)
+    (overlay-put ov 'miao-miacro-type 'cursor)
+    (push ov miao--miacro-overlays)))
+
+(defun miao--miacro-check-in-overlay ()
+  (let ((pos (point)))
+    (catch 'found
+      (dolist (ov miao--miacro-overlays)
+        (when (and (overlay-start ov)
+                   (overlay-end ov)
+                   (<= (overlay-start ov) pos)
+                   (<= pos (overlay-end ov)))
+          (throw 'found ov)))
+      nil)))
+
+(defun miao--reset-fake-cursors ()
+  (dolist (ov miao--miacro-fake-cursors)
+    (delete-overlay ov))
+  (setq miao--miacro-fake-cursors nil))
+
+(defun miao-miacro-remove-overlays ()
+  (miao--reset-fake-cursors)
+  (dolist (ov miao--miacro-overlays)
+    (delete-overlay ov))
+  (setq miao--miacro-overlays nil))
+
+(defun miao-miacro-ignite ()
+  (interactive)
+  (if-let* ((ov (miao--miacro-check-in-overlay)))
+      (progn
+        (setq miao--miacro-selection ov
+              miao--miacro-ignite-offset (- (point) (overlay-start ov)))
+        (miao--reset-fake-cursors)
+        (message "offset %s" miao--miacro-ignite-offset)
+        (dolist (line miao--miacro-overlays)
+          (let ((fake-cursor (miao--add-fake-cursor-at-point
+                              (+ miao--miacro-ignite-offset
+                                 (overlay-start line)))))
+            (push fake-cursor miao--miacro-fake-cursors)))
+        (call-interactively 'kmacro-start-macro))
+   (message "Miaocro has to be in a selection")))
+
+(defun miao-miacro-go ()
+  (interactive)
+  (when defining-kbd-macro
+    (kmacro-end-macro nil)
+    (when last-kbd-macro
+      (message "kbd macro defined")
+      (atomic-change-group
+        (save-window-excursion
+          (save-mark-and-excursion
+            (dolist (ov miao--miacro-overlays)
+              (unless (eq ov miao--miacro-selection)
+                (let ((start (overlay-start ov))
+                      (end (overlay-end ov)))
+                  (message "apply macro to %s %s %s" ov start end)
+                  (when (and start end)
+                      (save-restriction
+                        (goto-char (+ start miao--miacro-ignite-offset))
+                        (narrow-to-region start end)
+                        (kmacro-call-macro 1)
+                        (widen))))))))
+        (miao-miacro-remove-overlays)
+        (setq miao--miacro-selection nil)))))
+
 (defun miao-next-region-item (direction)
   (if (region-active-p)
       (let ((length (- (region-end) (region-beginning)))
-            (re (regexp-quote (buffer-substring-no-properties (region-beginning) (region-end)))))
+            (re (concat "\\_<" (regexp-quote (buffer-substring-no-properties (region-beginning) (region-end))) "\\_>")))
         (goto-char (if (> direction 0) (region-end) (region-beginning)))
         (setq next (re-search-forward re nil t direction))
         (set-mark (+ (point) (* length (- direction)))))))
+
+(defun miao-mark-all-symbol ()
+  (interactive)
+  (miao-miacro-remove-overlays)
+  (when-let* ((bounds (bounds-of-thing-at-point 'symbol))
+              (begin (car bounds))
+              (end (cdr bounds))
+              (re (concat "\\_<"
+                          (regexp-quote (buffer-substring-no-properties begin end))
+                          "\\_>")))
+    (save-excursion
+      (save-restriction
+        (goto-char (point-min))
+        (while (re-search-forward re nil t)
+          (miao--add-overlay-symbol (match-beginning 0) (match-end 0)))))))
+
+(defun miao-mark-all-lines ()
+  (interactive)
+  (miao-miacro-remove-overlays)
+  (when (region-active-p)
+    (save-excursion
+      (let ((start (region-beginning))
+            (end (region-end)))
+        (deactivate-mark)
+        (goto-char start)
+        (while (and (<= (point) end)
+                    (not (eobp)))
+          (let* ((line-start (line-beginning-position))
+                 (line-end (line-end-position))
+                 (ov (make-overlay line-start line-end)))
+            (overlay-put ov 'face 'region)
+            (push ov miao--miacro-overlays))
+          (forward-line 1))))))
+
 
 (defun miao-next-symbol-item (direction)
   (if (not (region-active-p))

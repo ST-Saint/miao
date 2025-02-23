@@ -93,6 +93,41 @@
           (number-sequence ?a ?z)
           (number-sequence ?\{ ?~)))
 
+
+(defun mix-colors (color1 color2 &optional alpha)
+  "Mix two colors COLOR1 and COLOR2.
+The optional ALPHA argument controls the mix ratio (0.0 is all COLOR1, 1.0 is all COLOR2)."
+  (let* ((rgb1 (color-values color1))
+         (rgb2 (color-values color2))
+         (r1 (nth 0 rgb1)) (g1 (nth 1 rgb1)) (b1 (nth 2 rgb1))
+         (r2 (nth 0 rgb2)) (g2 (nth 1 rgb2)) (b2 (nth 2 rgb2))
+         (alpha (or alpha 0.5))  ; Default to 50% mix
+         (r (round (+ (* (- 1 alpha) r1) (* alpha r2))))
+         (g (round (+ (* (- 1 alpha) g1) (* alpha g2))))
+         (b (round (+ (* (- 1 alpha) b1) (* alpha b2)))))
+    (format "#%02x%02x%02x" r g b)))
+
+(defvar miao--miacro-overlays nil)
+(defvar miao--miacro-fake-cursors nil)
+
+(defvar miao--miacro-selection nil)
+(defvar miao--macro-ignite-offset nil)
+
+(defface miao-miacro-fake-cursor
+  `((t :box (:line-width (1 . 1)
+             :color ,(mix-colors (face-background 'cursor nil t) (face-background 'region nil t))
+             :style flat-button)
+       :background "transparent"))
+  "Miao beacon fake cursor."
+  :group 'miao)
+
+(defface miao-miacro-fake-symbol
+  `((t :background ,(mix-colors
+                     (face-background 'cursor nil t)
+                     (face-background 'region nil t))))
+  "Miao beacon fake region."
+  :group 'miao)
+
 (defface miao-modeline-face
   '((t :weight bold))
   "Normal state indicator."

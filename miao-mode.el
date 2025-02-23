@@ -54,6 +54,7 @@
   (lambda ()
     (unless (minibufferp)
       (miao-mode 1)))
+  (miao--prepare-face)
   (add-to-ordered-list 'emulation-mode-map-alists
                        `((miao-normal-mode . ,miao-normal-state-keymap)))
   (add-to-ordered-list 'emulation-mode-map-alists

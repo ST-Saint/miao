@@ -84,22 +84,21 @@
   (let* ((overriding-local-map miao-leader-state-keymap)
          (keybind (key-binding keys))
          (leader-major-keymap (gethash major-mode miao-leader-major-keymap-hash)))
-
-    (if leader-major-keymap
-        (let* ((overriding-local-map leader-major-keymap)
-               (major-keybind (key-binding keys)))
+    (if keybind
+        keybind
+      (let* ((overriding-local-map leader-major-keymap)
+             (major-keybind (key-binding keys)))
           (if (or (not major-keybind)
                   (equal major-keybind 'undefined))
               keybind
-            major-keybind))
-      keybind)))
+            major-keybind)))))
 
 (defun miao--leader-describe-keymap (keymap)
   (when (or
          miao--leader-keymap-description-activated
          (setq miao--leader-keymap-description-activated
                (sit-for miao-leader-describe-delay t)))
-    (which-key--create-buffer-and-show nil keymap nil (concat "Miao: " (miao--leader-format-keys)))))
+    (which-key--create-buffer-and-show nil keymap nil (concat "Miao: " (miao--leader-format-keys nil)))))
 
 (defun miao--leader-try-execute ()
   "Try execute command.
@@ -148,5 +147,16 @@ try replacing the last modifier and try again."
      (prompt
       (setq result (concat result " C-"))))
     result))
+
+(defun miao--prepare-face (&rest _ignore)
+  (set-face-attribute 'miao-miacro-fake-cursor
+                      nil
+                      :background (mix-colors (face-background 'cursor nil t)
+                                         (face-background 'region nil t) 0.6))
+  (set-face-attribute 'miao-miacro-fake-symbol
+                      nil
+                      :background (mix-colors (face-background 'cursor nil t)
+                                              (face-background 'region nil t) 0.8)))
+
 
 (provide 'miao-core)
